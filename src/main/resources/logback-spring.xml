@@ -1,0 +1,133 @@
+<configuration scan="true" scanPeriod="10 seconds">
+
+  <contextName>approbe</contextName>
+  
+  <springProperty scope="context" name="raw_files_location" source="approbe.raw_files_location" defaultValue="${conf.dir}/../log" />
+  <springProperty scope="context" name="max_files_history_days" source="approbe.max_files_history_days" defaultValue="30" />
+  <springProperty scope="context" name="max_files_total_size" source="approbe.max_files_total_size" defaultValue="10GB" />
+  
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+			<!-- <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern> -->
+      <pattern>%date|%-5level|%thread|%msg|%logger{50}:%line%n</pattern>
+    </encoder>
+  </appender>
+
+	<!--application log configuration -->
+  <appender name="APP" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <encoder>
+			<!-- <pattern> [%date][%level][%thread] [%file:%line] %msg - %logger{50}%n </pattern> -->
+      <pattern>
+        %date|%-5level|%thread|%msg|%logger{50}:%line%n
+      </pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${conf.dir}/../log/approbe.%d{yyyy-MM-dd}.log.%i</fileNamePattern>
+             <!-- each file should be at most 30MB, keep 30 days worth of history, but at most 10GB -->
+      <maxFileSize>30MB</maxFileSize>
+			<!-- delete 30 days ago files -->
+      <maxHistory>30</maxHistory>
+      <totalSizeCap>10GB</totalSizeCap>
+    </rollingPolicy>
+  </appender>
+	<!--application error log configuration -->
+  <appender name="ERR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>ERROR</level>
+    </filter>
+    <encoder>
+			<!-- <pattern> [%date][%level][%thread] [%file:%line] %msg - %logger{50}%n </pattern> -->
+      <pattern>
+        %date|%-5level|%thread|%msg|%logger{50}:%line%n
+      </pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${conf.dir}/../log/error.%d{yyyy-MM-dd}.log.%i</fileNamePattern>
+      <maxFileSize>30MB</maxFileSize>
+            <!-- delete 30 days ago files -->
+      <maxHistory>30</maxHistory>
+      <totalSizeCap>5GB</totalSizeCap>
+    </rollingPolicy>
+  </appender>
+
+  <appender name="LOG_UPLINK_STATUS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <encoder>
+      <pattern>%msg%n</pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${raw_files_location}/uplinkstatus/${HOSTNAME}.uplinkstatus.%d{yyyy-MM-dd}.%i</fileNamePattern>
+      <maxFileSize>100MB</maxFileSize>
+      <maxHistory>${max_files_history_days}</maxHistory>
+      <totalSizeCap>${max_files_total_size}</totalSizeCap>
+    </rollingPolicy>
+  </appender>
+  <appender name="LOG_STA_INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <encoder>
+      <pattern>%msg%n</pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${raw_files_location}/stainfo/${HOSTNAME}.stainfo.%d{yyyy-MM-dd}.%i</fileNamePattern>
+      <maxFileSize>100MB</maxFileSize>
+      <maxHistory>${max_files_history_days}</maxHistory>
+      <totalSizeCap>${max_files_total_size}</totalSizeCap>
+    </rollingPolicy>
+  </appender>
+  <appender name="LOG_WIFI_STATUS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <encoder>
+      <pattern>%msg%n</pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${raw_files_location}/wifistatus/${HOSTNAME}.wifistatus.%d{yyyy-MM-dd}.%i</fileNamePattern>
+      <maxFileSize>100MB</maxFileSize>
+      <maxHistory>${max_files_history_days}</maxHistory>
+      <totalSizeCap>${max_files_total_size}</totalSizeCap>
+    </rollingPolicy>
+  </appender>
+  <appender name="LOG_WLAN_NEIGHBOR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <encoder>
+      <pattern>%msg%n</pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${raw_files_location}/wlanneighbor/${HOSTNAME}.wlanneighbor.%d{yyyy-MM-dd}.%i</fileNamePattern>
+      <maxFileSize>100MB</maxFileSize>
+      <maxHistory>${max_files_history_days}</maxHistory>
+      <totalSizeCap>${max_files_total_size}</totalSizeCap>
+    </rollingPolicy>
+  </appender>
+  <appender name="LOG_SERVICE_DATA_INFO" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <encoder>
+      <pattern>%msg%n</pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>${raw_files_location}/servicedatainfo/${HOSTNAME}.servicedatainfo.%d{yyyy-MM-dd}.%i</fileNamePattern>
+      <maxFileSize>100MB</maxFileSize>
+      <maxHistory>${max_files_history_days}</maxHistory>
+      <totalSizeCap>${max_files_total_size}</totalSizeCap>
+    </rollingPolicy>
+  </appender>
+
+  <logger name="com.nokia.itms.approbe" level="DEBUG"></logger>
+
+  <logger name="com.nokia.itms.approbe.service.storers.UplinkStatusLogger" level="INFO" additivity="false">
+    <appender-ref ref="LOG_UPLINK_STATUS" />
+  </logger>
+  <logger name="com.nokia.itms.approbe.service.storers.StaInfoLogger" level="INFO" additivity="false">
+    <appender-ref ref="LOG_STA_INFO" />
+  </logger>
+  <logger name="com.nokia.itms.approbe.service.storers.WifiStatusLogger" level="INFO" additivity="false">
+    <appender-ref ref="LOG_WIFI_STATUS" />
+  </logger>
+  <logger name="com.nokia.itms.approbe.service.storers.WlanNeighborLogger" level="INFO" additivity="false">
+    <appender-ref ref="LOG_WLAN_NEIGHBOR" />
+  </logger>
+  <logger name="com.nokia.itms.approbe.service.storers.ServiceDataInfoLogger" level="INFO" additivity="false">
+    <appender-ref ref="LOG_SERVICE_DATA_INFO" />
+  </logger>
+
+  <root level="INFO">
+    <appender-ref ref="STDOUT" />
+    <appender-ref ref="APP" />
+    <appender-ref ref="ERR" />
+  </root>
+
+</configuration>
