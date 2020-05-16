@@ -1,0 +1,49 @@
+#generate server keystore
+keytool -v -genkeypair -alias server -keyalg RSA -keypass keypass -storepass storepass -keystore keystore.jks -validity 1024
+
+#generate client keystore
+keytool -v -genkeypair -alias client -keyalg RSA -storetype PKCS12 -keypass keypass -storepass storepass -keystore client_keystore.p12 -validity 1024
+
+# export server cert from server keystore
+keytool -exportcert -v -alias server -keystore keystore.jks -storepass storepass -rfc -file server.cer
+
+# export client cert from client keystore
+keytool -exportcert -v -alias client -keystore client_keystore.p12 -storetype PKCS12 -storepass storepass -rfc -file client.cer
+
+#generate truststore used by https client
+keytool -import -v -alias server -file server.cer -keystore client_truststore.jks -storepass storepass
+
+#generate truststore used by https server
+keytool -import -v -alias client -file client.cer -keystore server_truststore.jks -storepass storepass
+
+#check keystore file
+keytool -list -v -storepass storepass -keystore keystore.jks
+
+# convert key file from PKCS12 to unencrypted PEM
+openssl pkcs12 -passin pass:storepass -in client_keystore.p12 -out client_keystore.pem -nodes 
+
+# convert key file from PKCS12 to encrypted PEM
+openssl pkcs12 -passin pass:storepass -passout pass:storepass -in client_keystore.p12 -out client_keystore_encrypted.pem 
+
+# convert keystore type from JKS to PKCS12
+# Warning:  Different store and key passwords not supported for PKCS12 KeyStores. 
+# Ignoring user-specified -destkeypass value.
+keytool -v -alias approbe_server -importkeystore -srckeystore keystore.jks -srcstorepass storepass -srckeypass keypass -destkeystore keystore.pcks12 -deststorepass storepass -destkeypass keypass -srcstoretype JKS -deststoretype PKCS12
+
+
+
+
+# generate unencrypted private key to PEM file
+openssl genrsa -out openssl_key.pem 2048
+
+# generate certificate using exists private key to PEM file  
+openssl req -new -x509 -days 1024 -key openssl_key.pem -out openssl_crt.pem
+
+# generate public key using exists private key to PEM file  
+openssl rsa -in openssl_key.pem -pubout -out openssl_pubkey.pem
+
+# generate encrypted private key to PEM file
+openssl genrsa -out openssl_key_encrypted.pem -passout pass:keypass -des3 2048
+
+# generate certificate using exists encrypted private key to PEM file  
+openssl req -new -x509 -days 1024 -key openssl_key_encrypted.pem -passin pass:keypass -out openssl_crt.pem
